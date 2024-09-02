@@ -46,4 +46,5 @@
             "color": "green"
         }
     ],
+    "makefile.configureOnOpen": false,
 }
