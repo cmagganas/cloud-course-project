@@ -34,6 +34,12 @@ release-prod:
 release-test:
 	bash run.sh release:test
 
+run:
+	bash run.sh run
+
+run-mock:
+	bash run.sh run-mock
+
 serve-coverage-report:
 	bash run.sh serve-coverage-report
 
