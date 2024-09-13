@@ -1,4 +1,3 @@
-
 ############################
 # --- Package Settings --- #
 ############################
@@ -10,11 +9,7 @@ authors = [{ name = "<your name>", email = "some-email@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
-<<<<<<< HEAD:section-2--rest-apis/1--rest-endpoints-happy-path/lab--answer-key/pyproject.toml
-dependencies = ["boto3", "fastapi"]
-=======
-dependencies = ['importlib-metadata; python_version<"3.8"', "boto3", "fastapi"]
->>>>>>> 3644bb06aeaa5084891c42a2e1642c598cb59d8c:pyproject.toml
+dependencies = ['importlib-metadata; python_version<"3.8"', 'boto3', 'fastapi']
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["one", "two"]
 
@@ -27,7 +22,7 @@ version = { file = "version.txt" }
 
 # optional dependencies can be installed with square brackets, e.g. `pip install my-package[test,static-code-qa]`
 [project.optional-dependencies]
-api = ["uvicorn", "moto[server]"]
+api = ["uvicorn"]
 stubs = ["boto3-stubs[s3]"]
 notebooks = ["jupyterlab", "ipykernel", "rich"]
 test = ["pytest", "pytest-cov", "moto[s3]"]
@@ -47,13 +42,14 @@ static-code-qa = [
 # - automatically apply formatting
 # - show enhanced autocompletion for stubs libraries
 # See .vscode/settings.json to see how VS Code is configured to use these tools
-dev = ["cloud-course-project[test,release,static-code-qa,stubs,notebooks,api]"]
+dev = ["cloud-course-project[api,stubs,notebooks,test,release,static-code-qa]"]
 
 [build-system]
 # Minimum requirements for the build system to execute.
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+# include more than only .py files in the distribution package (wheel)
 [tool.setuptools.package-data]
 files_api = ["*.json"]
 
@@ -67,6 +63,7 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
 [tool.black]
 line-length = 119
+# regular expression ignoring multiple patterns separated by '|' and newlines
 exclude = '''
 /(
     \.venv
