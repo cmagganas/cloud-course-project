@@ -1,0 +1,6 @@
+openai>=1.35.1,<2
+python-dotenv>=1.0.1,<2
+rich>=13.7.1,<14
+jupyterlab>=4.2.2,<5
+ipykernel>=6.29.4,<7
+fastapi>=0.112.0,<1

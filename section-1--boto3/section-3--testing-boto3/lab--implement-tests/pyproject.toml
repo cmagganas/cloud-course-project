@@ -1,0 +1,52 @@
+############################
+# --- Package Settings --- #
+############################
+
+[project]
+name = "files-api"
+description = "My package description"
+authors = [{ name = "<your name>", email = "some-email@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "MIT" }
+dependencies = ["boto3"]
+classifiers = ["Programming Language :: Python :: 3"]
+keywords = ["one", "two"]
+
+# version will be derived dynamically from version.txt via setuptools
+dynamic = ["version"]
+
+# docs: https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html#dynamic-metadata
+[tool.setuptools.dynamic]
+version = { file = "version.txt" }
+
+# optional dependencies can be installed with square brackets, e.g. `pip install my-package[test,static-code-qa]`
+[project.optional-dependencies]
+stubs = ["boto3-stubs[s3]"]
+notebooks = ["jupyterlab", "ipykernel", "rich"]
+test = ["pytest", "pytest-cov"]
+release = ["build", "twine"]
+static-code-qa = [
+    "pre-commit",
+    "pylint",
+    "black",
+    "isort",
+    "flake8",
+    "flake8-docstrings",
+    "Flake8-pyproject",
+    "radon",
+]
+# Installing dev depenendencies in your virtual env makes it so that during development VS Code can
+# - surface linting errors
+# - automatically apply formatting
+# - show enhanced autocompletion for stubs libraries
+# See .vscode/settings.json to see how VS Code is configured to use these tools
+dev = ["files-api[test,release,static-code-qa,stubs,notebooks]"]
+
+[build-system]
+# Minimum requirements for the build system to execute.
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+files_api = ["*.json"]

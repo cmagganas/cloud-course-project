@@ -1,0 +1,3 @@
+# Keep it secret. Keep it safe.
+*.env
+*mocked-speech*
