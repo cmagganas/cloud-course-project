@@ -13,7 +13,7 @@ dependencies = [
     'importlib-metadata; python_version<"3.8"',
     'boto3',
     'fastapi',
-    'pydantic-settings',
+    'pydantic-settings ',
 ]
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["one", "two"]
