@@ -33,8 +33,8 @@ function install {
 # - a lambda function named $AWS_LAMBDA_FUNCTION_NAME already exists
 # - docker 🐳 is required to run this function
 function deploy-lambda {
-    export AWS_PROFILE=default
-    export AWS_REGION=us-east-2
+    export AWS_PROFILE=cloud-course
+    export AWS_REGION=us-west-2
     deploy-lambda:cd
 }
 

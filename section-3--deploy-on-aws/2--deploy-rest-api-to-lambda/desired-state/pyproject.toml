@@ -9,12 +9,7 @@ authors = [{ name = "<your name>", email = "some-email@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
-dependencies = [
-    'importlib-metadata; python_version<"3.8"',
-    'boto3',
-    'fastapi',
-    'pydantic-settings ',
-]
+dependencies = ["boto3", "fastapi", "pydantic-settings"]
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["one", "two"]
 
@@ -28,7 +23,7 @@ version = { file = "version.txt" }
 # optional dependencies can be installed with square brackets, e.g. `pip install my-package[test,static-code-qa]`
 [project.optional-dependencies]
 aws-lambda = ["mangum"]
-api = ["uvicorn"]
+api = ["uvicorn", "moto[server]"]
 stubs = ["boto3-stubs[s3]"]
 notebooks = ["jupyterlab", "ipykernel", "rich"]
 test = ["pytest", "pytest-cov", "moto[s3]"]
@@ -48,14 +43,15 @@ static-code-qa = [
 # - automatically apply formatting
 # - show enhanced autocompletion for stubs libraries
 # See .vscode/settings.json to see how VS Code is configured to use these tools
-dev = ["cloud-course-project[aws-lambda,api,stubs,notebooks,test,release,static-code-qa]"]
+dev = [
+    "cloud-course-project[test,release,static-code-qa,stubs,notebooks,api,aws-lambda]",
+]
 
 [build-system]
 # Minimum requirements for the build system to execute.
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-# include more than only .py files in the distribution package (wheel)
 [tool.setuptools.package-data]
 files_api = ["*.json"]
 
@@ -69,7 +65,6 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
 [tool.black]
 line-length = 119
-# regular expression ignoring multiple patterns separated by '|' and newlines
 exclude = '''
 /(
     \.venv
@@ -79,7 +74,25 @@ exclude = '''
 
 [tool.flake8]
 docstring-convention = "all"
-ignore = ["D107", "D212", "E501", "W503", "W605", "D203", "D100"]
+ignore = [
+    "D107",
+    "D212",
+    "E501",
+    "W503",
+    "W605",
+    "D203",
+    "D100",
+    # D103: Missing docstring in public function
+    "D103",
+    # D101: Missing docstring in public class
+    "D101",
+    # D102: Missing docstring in public method
+    "D102",
+    # D104: Missing docstring in public package
+    "D104",
+    # D105: Missing docstring in magic method
+    "D105",
+]
 exclude = ["venv"]
 max-line-length = 119
 
@@ -101,4 +114,6 @@ disable = [
     "import-error",
     "too-few-public-methods",
     "redefined-outer-name",
+    "missing-module-docstring",
+    "missing-class-docstring",
 ]
