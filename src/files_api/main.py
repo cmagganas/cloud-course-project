@@ -1,106 +1,80 @@
-from datetime import datetime
-from typing import (
-    List,
-    Optional,
+from textwrap import dedent
+
+import pydantic
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.routing import APIRoute
+
+from files_api.errors import (
+    handle_broad_exceptions,
+    handle_pydantic_validation_errors,
 )
-
-from fastapi import (
-    Depends,
-    FastAPI,
-    Response,
-    UploadFile,
-    status,
+from files_api.monitoring.logger import inject_lambda_context__middleware
+from files_api.route_handler import RouteHandler
+from files_api.routes import (
+    FILES_ROUTER,
+    GENERATED_FILES_ROUTER,
 )
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-
-from files_api.s3.delete_objects import delete_s3_object
-from files_api.s3.read_objects import (
-    fetch_s3_object,
-    fetch_s3_objects_metadata,
-    fetch_s3_objects_using_page_token,
-    object_exists_in_s3,
-)
-from files_api.s3.write_objects import upload_s3_object
-
-#####################
-# --- Constants --- #
-#####################
-
-S3_BUCKET_NAME = "some-bucket"
-
-APP = FastAPI()
-
-####################################
-# --- Request/response schemas --- #
-####################################
+from files_api.settings import Settings
 
 
-# read (cRud)
-class FileMetadata(BaseModel):
-    file_path: str
-    last_modified: datetime
-    size_bytes: int
+def create_app(settings: Settings | None = None) -> FastAPI:
+    """Create a FastAPI application."""
+    settings = settings or Settings()
 
+    app = FastAPI(
+        title="Files API",
+        summary="Store and retrieve files.",
+        version="v1",  # a fancier version would read the semver from pkg metadata
+        description=dedent(
+            """\
+        ![Maintained by](https://img.shields.io/badge/Maintained%20by-MLOps%20Club-05998B?style=for-the-badge)
 
-# more pydantic models ...
-
-
-##################
-# --- Routes --- #
-##################
-
-
-@APP.put("/files/{file_path:path}")
-async def upload_file(file_path: str, file: UploadFile, response: Response):
-    """Upload a file."""
-
-    file_contents: bytes = await file.read()
-    upload_s3_object(
-        bucket_name=S3_BUCKET_NAME,
-        object_key=file_path,
-        file_content=file_contents,
-        content_type=file.content_type,
+        | Helpful Links | Notes |
+        | --- | --- |
+        | [Course Homepage](https://mlops-club.org) | |
+        | [Course Student Portal](https://courses.mlops-club.org) | |
+        | [Course Materials Repo](https://github.com/mlops-club/python-on-aws-course.git) | `mlops-club/python-on-aws-course` |
+        | [Course Reference Project Repo](https://github.com/mlops-club/cloud-course-project.git) | `mlops-club/cloud-course-project` |
+        | [FastAPI Documentation](https://fastapi.tiangolo.com/) | |
+        | [Learn to make "badges"](https://shields.io/) | Example: <img alt="Awesome Badge" src="https://img.shields.io/badge/Awesome-😎-blueviolet?style=for-the-badge"> |
+        """
+        ),
+        docs_url="/",  # its easier to find the docs when they live on the base url
+        generate_unique_id_function=custom_generate_unique_id,
+        root_path=settings.root_path,
     )
+    app.state.settings = settings
+
+    app.router.route_class = RouteHandler
+    app.include_router(FILES_ROUTER)
+    app.include_router(GENERATED_FILES_ROUTER)
+
+    app.add_exception_handler(
+        exc_class_or_status_code=RequestValidationError,
+        handler=handle_pydantic_validation_errors,
+    )
+    app.add_exception_handler(
+        exc_class_or_status_code=pydantic.ValidationError,
+        handler=handle_pydantic_validation_errors,
+    )
+    app.middleware("http")(handle_broad_exceptions)
+    app.middleware("http")(inject_lambda_context__middleware)
+
+    return app
 
 
-@APP.get("/files")
-async def list_files(
-    query_params=...,
-):
-    """List files with pagination."""
-    ...
-
-
-@APP.head("/files/{file_path:path}")
-async def get_file_metadata(file_path: str, response: Response) -> Response:
-    """Retrieve file metadata.
-
-    Note: by convention, HEAD requests MUST NOT return a body in the response.
+def custom_generate_unique_id(route: APIRoute):
     """
-    return
+    Generate prettier `operationId`s in the OpenAPI schema.
 
-
-@APP.get("/files/{file_path:path}")
-async def get_file(
-    file_path: str,
-):
-    """Retrieve a file."""
-    ...
-
-
-@APP.delete("/files/{file_path:path}")
-async def delete_file(
-    file_path: str,
-    response: Response,
-) -> Response:
-    """Delete a file.
-
-    NOTE: DELETE requests MUST NOT return a body in the response."""
-    return
+    These become the function names in generated client SDKs.
+    """
+    return f"{route.tags[0]}-{route.name}"
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(APP, host="0.0.0.0", port=8000)
+    app = create_app()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
