@@ -97,7 +97,7 @@ async def list_files(
     logger.debug("fetching files from s3: {dir}", dir=query_params.directory)
     logger.info(query_params.model_dump())
 
-    raise Exception("test")
+    # raise Exception("test")
 
     if query_params.page_token:
         files, next_page_token = fetch_s3_objects_using_page_token(
