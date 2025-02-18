@@ -10,10 +10,14 @@ readme = "README.md"
 requires-python = ">=3.7"
 license = { text = "MIT" }
 dependencies = [
-    'importlib-metadata; python_version<"3.8"',
+    # 'importlib-metadata; python_version<"3.8"',
     'boto3',
     'fastapi',
-    'pydantic-settings ',
+    'pydantic-settings',
+    'python-multipart',
+    'openai',
+    'httpx',
+    'loguru',
 ]
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["one", "two"]
@@ -28,10 +32,10 @@ version = { file = "version.txt" }
 # optional dependencies can be installed with square brackets, e.g. `pip install my-package[test,static-code-qa]`
 [project.optional-dependencies]
 aws-lambda = ["mangum"]
-api = ["uvicorn"]
+api = ["moto[server]"]
 stubs = ["boto3-stubs[s3]"]
 notebooks = ["jupyterlab", "ipykernel", "rich"]
-test = ["pytest", "pytest-cov", "moto[s3]"]
+test = ["pytest", "pytest-cov", "moto[s3]", "uvicorn", "locust"]
 release = ["build", "twine"]
 static-code-qa = [
     "pre-commit",

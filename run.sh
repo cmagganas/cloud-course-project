@@ -158,6 +158,28 @@ function run-mock {
     # Wait for the moto.server process to finish (this is optional if you want to keep it running)
     wait $MOTO_PID
 }
+
+function set-local-aws-env-vars {
+    export AWS_PROFILE=default
+    export AWS_REGION=us-east-2
+}
+
+function run-docker {
+    set-local-aws-env-vars
+    aws configure export-credentials --profile $AWS_PROFILE --format env > .env
+    docker compose up --build
+}
+
+function run-locust {
+    set-local-aws-env-vars
+    aws configure export-credentials --profile $AWS_PROFILE --format env > .env
+    docker compose \
+        --file docker-compose.yaml \
+        --file docker-compose.locust.yaml \
+        up \
+        --build
+}
+
 # run linting, formatting, and other static code quality tools
 function lint {
     pre-commit run --all-files
