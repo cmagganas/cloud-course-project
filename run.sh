@@ -73,9 +73,7 @@ function deploy-lambda:cd {
         pip install --root --upgrade pip \
         && pip install \
             --editable /out/[aws-lambda] \
-            --target /out/${BUILD_DIR_REL_PATH}/${LAMBDA_LAYER_DIR_NAME}/python \
-        && rm -rf /out/${BUILD_DIR_REL_PATH}/${LAMBDA_LAYER_DIR_NAME}/python/boto3 \
-        && rm -rf /out/${BUILD_DIR_REL_PATH}/${LAMBDA_LAYER_DIR_NAME}/python/botocore \
+            --target /out/${BUILD_DIR_REL_PATH}/${LAMBDA_LAYER_DIR_NAME}/python
         "
 
     # bundle dependencies and handler in a zip file

@@ -174,3 +174,11 @@ dist
 *env
 *.env
 *cache*
+.mypy_cache
+.git
+.pytest_cache/
+.vscode/
+venv/ 
+etc/
+include/
+lib/
