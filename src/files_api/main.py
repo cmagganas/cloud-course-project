@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
 
+from files_api.auth.protected_routes import protected_router
+from files_api.auth.routes import auth_router
 from files_api.errors import (
     handle_broad_exceptions,
     handle_pydantic_validation_errors,
@@ -49,6 +51,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.router.route_class = RouteHandler
     app.include_router(FILES_ROUTER)
     app.include_router(GENERATED_FILES_ROUTER)
+    app.include_router(auth_router)
+    app.include_router(protected_router)
 
     app.add_exception_handler(
         exc_class_or_status_code=RequestValidationError,
