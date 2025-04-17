@@ -301,9 +301,25 @@ function try-load-dotenv {
         return 1
     fi
 
-    while read -r line; do
-        export "$line"
-    done < <(grep -v '^#' "$THIS_DIR/.env" | grep -v '^$')
+    # Use while read with IFS to properly handle lines with spaces
+    while IFS= read -r line || [ -n "$line" ]; do
+        # Skip comments and empty lines
+        [[ $line =~ ^#.*$ ]] && continue
+        [[ -z $line ]] && continue
+        
+        # Remove 'export ' if present at the start of the line
+        line=$(echo "$line" | sed 's/^export //')
+        
+        # Extract key and value, handling spaces in values
+        key=$(echo "$line" | cut -d'=' -f1)
+        value=$(echo "$line" | cut -d'=' -f2-)
+        
+        # Remove quotes if present
+        value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+        
+        # Export the variable
+        export "$key=$value"
+    done < "$THIS_DIR/.env"
 }
 
 # print all functions in this file
@@ -314,7 +330,26 @@ function help {
 }
 
 function run-uv {
-    try-load-dotenv
+    if ! try-load-dotenv; then
+        echo "Warning: Could not load .env file, continuing without it"
+    fi
+    
+    if ! command -v uv &> /dev/null; then
+        echo "Error: uv is not installed. Please install it first."
+        echo "You can install it with: pip install uv"
+        return 1
+    fi
+    
+    # Check if port 8000 is in use
+    if lsof -ti:8000 > /dev/null 2>&1; then
+        echo "Error: Port 8000 is already in use."
+        echo "To free the port, you can:"
+        echo "1. Find the process using the port: lsof -i :8000"
+        echo "2. Kill the process: kill -9 <PID>"
+        echo "3. Or use a different port by setting REACT_APP_PORT in your .env file"
+        return 1
+    fi
+    
     uv run --active -m src.files_api.main
 }
 
