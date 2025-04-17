@@ -70,3 +70,6 @@ test:
 
 test-wheel-locally:
 	bash run.sh test:wheel-locally
+
+run-uv:
+	bash run.sh run-uv

@@ -313,5 +313,10 @@ function help {
     compgen -A function | cat -n
 }
 
+function run-uv {
+    try-load-dotenv
+    uv run --active -m src.files_api.main
+}
+
 TIMEFORMAT="Task completed in %3lR"
 time ${@:-help}
