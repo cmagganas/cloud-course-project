@@ -10,6 +10,43 @@ This module provides AWS Cognito authentication integration for FastAPI applicat
 - Login, callback, and logout endpoints
 - Simple and secure authentication with HttpOnly cookies
 
+## Authentication UI
+
+A lightweight authentication UI has been implemented to provide login/logout functionality without requiring a separate frontend application. This makes the application more suitable for serverless deployment on AWS Lambda via API Gateway.
+
+### Key Features
+
+- Simple HTML page served directly from FastAPI
+- Login and logout buttons that use the existing Cognito authentication flow
+- Displays user information when authenticated
+- Shows protected route data when logged in
+- No separate frontend build process required
+
+### How to Access
+
+1. Start the application with `make run-uv`
+2. Navigate to `http://localhost:8000/auth` (or just `http://localhost:8000` which redirects to the auth page)
+3. Use the Login/Logout buttons to authenticate with Cognito
+
+### Implementation Details
+
+- The UI is served from a static HTML file at `src/files_api/static/index.html`
+- The FastAPI application serves this file at the `/auth` route
+- Authentication status is checked by calling the `/auth/user` endpoint
+- Protected information is fetched from the `/protected/user-info` endpoint
+- The UI uses simple fetch API calls with cookie-based authentication
+
+### Adapting for Production
+
+When deploying to AWS Lambda via API Gateway:
+
+1. The static files are packaged with the Lambda deployment
+2. API Gateway serves the static HTML through the Lambda function
+3. The authentication flow works the same as in local development
+4. No additional infrastructure is needed for the UI
+
+This approach keeps the application lightweight and avoids the need for a separate frontend hosting solution.
+
 ## Usage
 
 ### Authentication Flow

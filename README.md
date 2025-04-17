@@ -70,3 +70,31 @@ You can run the application in several ways:
 ```python
 from files_api import ...
 ```
+
+## Frontend Authentication UI
+
+A simple authentication UI is integrated directly into the FastAPI application. 
+To access the authentication UI:
+
+1. Start the application:
+   ```bash
+   make run-uv
+   ```
+
+2. Access the authentication UI through your browser:
+   ```
+   http://localhost:8000/auth
+   ```
+   
+   Or simply open the root URL which redirects to the auth page:
+   ```
+   http://localhost:8000
+   ```
+
+3. Use the login and logout buttons to authenticate with Cognito.
+
+The UI is lightweight and served directly from FastAPI without requiring a separate frontend build process, making it suitable for AWS Lambda deployments.
+
+### Environment Configuration
+
+Update the Cognito configuration in your environment variables (e.g. `.env` file)

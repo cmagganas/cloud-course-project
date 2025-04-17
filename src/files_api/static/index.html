@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Files API Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .button.logout {
+            background-color: #f44336;
+        }
+        .user-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Files API Authentication</h1>
+    
+    <div class="container">
+        <h2>Authentication Status</h2>
+        <div id="status">Checking authentication status...</div>
+        
+        <div id="auth-buttons">
+            <a href="/auth/login" class="button" id="login-button">Login</a>
+            <a href="/auth/logout" class="button logout" id="logout-button" style="display:none;">Logout</a>
+        </div>
+        
+        <div id="user-info" class="user-info">
+            <h3>User Information</h3>
+            <pre id="user-data"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication status on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            checkAuthStatus();
+        });
+
+        async function checkAuthStatus() {
+            try {
+                // Call the user info endpoint
+                const response = await fetch('/auth/user', {
+                    credentials: 'include' // Include cookies
+                });
+                
+                if (response.ok) {
+                    // User is authenticated
+                    const userData = await response.json();
+                    document.getElementById('status').innerHTML = 'Authenticated';
+                    document.getElementById('login-button').style.display = 'none';
+                    document.getElementById('logout-button').style.display = 'inline-block';
+                    
+                    // Display user info
+                    document.getElementById('user-info').style.display = 'block';
+                    document.getElementById('user-data').textContent = JSON.stringify(userData, null, 2);
+                    
+                    // Also fetch protected info
+                    fetchProtectedInfo();
+                } else {
+                    // User is not authenticated
+                    document.getElementById('status').innerHTML = 'Not authenticated';
+                    document.getElementById('login-button').style.display = 'inline-block';
+                    document.getElementById('logout-button').style.display = 'none';
+                    document.getElementById('user-info').style.display = 'none';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = 'Error checking authentication: ' + error.message;
+            }
+        }
+
+        async function fetchProtectedInfo() {
+            try {
+                const response = await fetch('/protected/user-info', {
+                    credentials: 'include' // Include cookies
+                });
+                
+                if (response.ok) {
+                    const protectedData = await response.json();
+                    const userDataElem = document.getElementById('user-data');
+                    userDataElem.textContent += '\n\nProtected Info:\n' + JSON.stringify(protectedData, null, 2);
+                }
+            } catch (error) {
+                console.error('Error fetching protected info:', error);
+            }
+        }
+    </script>
+</body>
+</html> 

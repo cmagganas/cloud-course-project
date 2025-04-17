@@ -1,9 +1,18 @@
+import os
 from textwrap import dedent
 
 import pydantic
-from fastapi import FastAPI
+from fastapi import (
+    FastAPI,
+    Request,
+)
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import (
+    HTMLResponse,
+    RedirectResponse,
+)
 from fastapi.routing import APIRoute
+from fastapi.staticfiles import StaticFiles
 
 from files_api.auth.protected_routes import protected_router
 from files_api.auth.routes import auth_router
@@ -42,7 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         | [Learn to make "badges"](https://shields.io/) | Example: <img alt="Awesome Badge" src="https://img.shields.io/badge/Awesome-😎-blueviolet?style=for-the-badge"> |
         """
         ),
-        docs_url="/",  # its easier to find the docs when they live on the base url
+        docs_url="/docs",  # Move docs to /docs to free up the root URL
         generate_unique_id_function=custom_generate_unique_id,
         root_path=settings.root_path,
     )
@@ -53,6 +62,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(GENERATED_FILES_ROUTER)
     app.include_router(auth_router)
     app.include_router(protected_router)
+    
+    # Root path redirects to auth page
+    @app.get("/", response_class=HTMLResponse, tags=["ui"])
+    async def root(request: Request):
+        return RedirectResponse(url="/auth")
+    
+    # Serve static files for authentication UI
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    
+    # Auth page route
+    @app.get("/auth", response_class=HTMLResponse, tags=["ui"])
+    async def auth_page(request: Request):
+        html_path = os.path.join(static_dir, "index.html")
+        with open(html_path, "r") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content)
 
     app.add_exception_handler(
         exc_class_or_status_code=RequestValidationError,
@@ -74,7 +100,9 @@ def custom_generate_unique_id(route: APIRoute):
 
     These become the function names in generated client SDKs.
     """
-    return f"{route.tags[0]}-{route.name}"
+    if route.tags and len(route.tags) > 0:
+        return f"{route.tags[0]}-{route.name}"
+    return route.name
 
 
 if __name__ == "__main__":
