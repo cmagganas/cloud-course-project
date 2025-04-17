@@ -55,7 +55,7 @@ async def callback(code: str, response: Response):
         response: FastAPI response object for setting cookies
         
     Returns:
-        dict: Success message if authentication is successful
+        RedirectResponse: Redirects to home page after successful authentication
         
     Raises:
         HTTPException: If token exchange fails
@@ -84,27 +84,62 @@ async def callback(code: str, response: Response):
             key="id_token",
             value=tokens["id_token"],
             httponly=True,
-            secure=True,
+            secure=False,  # Allow in development
             samesite="lax",
+            path="/",
             max_age=3600,  # 1 hour expiry
+            domain=None  # Allow cookie to be set on localhost
         )
         
-        return {"message": "Authentication successful"}
+        # Create redirect response
+        redirect = RedirectResponse(
+            url="/",
+            status_code=303  # See Other
+        )
+        
+        # Set the cookie on the redirect response as well
+        redirect.set_cookie(
+            key="id_token",
+            value=tokens["id_token"],
+            httponly=True,
+            secure=False,
+            samesite="lax",
+            path="/",
+            max_age=3600,
+            domain=None
+        )
+        
+        return redirect
 
 
 @auth_router.get("/auth/logout")
 async def logout(response: Response):
     """
-    Log the user out by clearing the auth cookie.
+    Log the user out by clearing the auth cookie and redirecting to home.
     
     Args:
         response: FastAPI response object for clearing cookies
         
     Returns:
-        dict: Success message
+        RedirectResponse: Redirects to home page
     """
-    response.delete_cookie(key="id_token")
-    return {"message": "Logged out successfully"}
+    # Create redirect response
+    redirect = RedirectResponse(
+        url="/",
+        status_code=303  # See Other
+    )
+    
+    # Clear the ID token cookie with same settings as when it was set
+    redirect.delete_cookie(
+        key="id_token",
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        path="/",
+        domain=None
+    )
+    
+    return redirect
 
 
 @auth_router.get("/auth/user")
