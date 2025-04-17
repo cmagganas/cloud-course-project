@@ -43,9 +43,8 @@ async def get_current_user(request: Request, credentials: HTTPAuthorizationCrede
     
     if not token:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+            headers={'Location': '/login'}
         )
             
     try:

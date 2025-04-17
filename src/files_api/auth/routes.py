@@ -11,6 +11,7 @@ from fastapi import (
     Request,
     Response,
 )
+from fastapi.responses import RedirectResponse
 
 from files_api.auth.jwt_auth import cognito_auth
 
@@ -32,7 +33,7 @@ async def login():
     Redirect user to Cognito login page.
     
     Returns:
-        dict: URL to redirect to for Cognito login
+        RedirectResponse: Redirects to Cognito login page
     """
     params = {
         "client_id": CLIENT_ID,
@@ -41,7 +42,7 @@ async def login():
         "redirect_uri": REDIRECT_URI,
     }
     url = f"https://{DOMAIN}/oauth2/authorize?{urlencode(params)}"
-    return {"url": url}
+    return RedirectResponse(url=url)
 
 
 @auth_router.get("/auth/callback")

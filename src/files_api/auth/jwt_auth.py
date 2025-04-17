@@ -25,17 +25,27 @@ class CognitoJWTAuth:
         self.userpool_id = os.environ.get("REACT_APP_COGNITO_USER_POOL_ID")
         self.app_client_id = os.environ.get("REACT_APP_COGNITO_CLIENT_ID")
         
-        # Don't fetch keys immediately in case environment variables aren't set
+        # Initialize keys and jwks as None
         self.keys = None
         self.jwks = {}
+        self.last_key_fetch = 0
+        self.key_cache_duration = 3600  # Cache keys for 1 hour
 
     def _get_public_keys(self) -> Dict:
         """
         Get the public keys from Cognito to verify JWT tokens.
+        Caches the keys for a specified duration.
         
         Returns:
             Dict: Dictionary of public keys
         """
+        current_time = time.time()
+        
+        # Check if we need to refresh the keys
+        if (self.keys is not None and 
+            current_time - self.last_key_fetch < self.key_cache_duration):
+            return self.keys
+            
         if not self.region or not self.userpool_id:
             print("Warning: AWS_REGION or COGNITO_USER_POOL_ID not set")
             return []
@@ -45,14 +55,20 @@ class CognitoJWTAuth:
             response = requests.get(keys_url)
             response.raise_for_status()
             self.keys = response.json()["keys"]
+            self.last_key_fetch = current_time
             
-            # Create a mapping of kid to public key
+            # Clear and rebuild the jwks mapping
+            self.jwks = {}
             for key_dict in self.keys:
                 kid = key_dict.get('kid')
                 if kid:
-                    # Convert JWK to PEM using PyJWK
-                    public_key = PyJWK.from_dict(key_dict).key
-                    self.jwks[kid] = public_key
+                    try:
+                        # Convert JWK to PEM using PyJWK
+                        public_key = PyJWK.from_dict(key_dict).key
+                        self.jwks[kid] = public_key
+                    except Exception as e:
+                        print(f"Error processing key {kid}: {e}")
+                        continue
                     
             return self.keys
         except Exception as e:
@@ -72,9 +88,8 @@ class CognitoJWTAuth:
         Raises:
             Exception: If the token is invalid
         """
-        # Lazy-load keys when needed
-        if not self.keys:
-            self._get_public_keys()
+        # Ensure we have the latest keys
+        self._get_public_keys()
             
         if not self.keys:
             raise Exception("No public keys available for token verification")
