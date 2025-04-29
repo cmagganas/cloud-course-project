@@ -6,6 +6,7 @@ from fastapi import (
     Depends,
     Request,
 )
+from fastapi.responses import RedirectResponse
 
 from files_api.auth.dependencies import get_current_user
 
@@ -23,6 +24,10 @@ async def protected_test_route(user=Depends(get_current_user)):
     Returns:
         dict: A message indicating the route is protected and user info
     """
+    # If user is a RedirectResponse, return it
+    if isinstance(user, RedirectResponse):
+        return user
+        
     return {
         "message": "This is a protected route - you are authenticated!",
         "user": user
@@ -41,6 +46,10 @@ async def protected_user_info(request: Request, user=Depends(get_current_user)):
     Returns:
         dict: User information from the JWT token
     """
+    # If user is a RedirectResponse, return it
+    if isinstance(user, RedirectResponse):
+        return user
+        
     return {
         "username": user.get("username", "Unknown"),
         "email": user.get("email", "Not provided"),

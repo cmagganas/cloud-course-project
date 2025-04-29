@@ -61,21 +61,29 @@
     </div>
 
     <script>
-        // Check if we're coming from a logout
+        // Check query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const loggedOut = urlParams.get('logged_out');
+        const redirectFromProtected = urlParams.get('redirect_from_protected');
         
-        if (loggedOut) {
+        // If coming from logout or protected redirect, clear cookies
+        if (loggedOut || redirectFromProtected) {
             // Clear any cached tokens
             document.cookie.split(";").forEach(function(c) { 
                 document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
             });
-            document.getElementById('status').innerHTML = 'Logged out successfully';
+            
+            if (loggedOut) {
+                document.getElementById('status').innerHTML = 'Logged out successfully';
+            } else if (redirectFromProtected) {
+                document.getElementById('status').innerHTML = 'Login required to access protected content';
+            }
+            
             document.getElementById('login-button').style.display = 'inline-block';
             document.getElementById('logout-button').style.display = 'none';
             document.getElementById('user-info').style.display = 'none';
         } else {
-            // Only check auth status if not coming from logout
+            // Only check auth status if not coming from logout or protected redirect
             checkAuthStatus();
         }
 
