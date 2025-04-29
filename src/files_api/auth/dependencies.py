@@ -1,6 +1,8 @@
 """
 Authentication dependencies for FastAPI routes using AWS Cognito.
 """
+import time
+
 from fastapi import (
     Depends,
     HTTPException,
@@ -43,16 +45,9 @@ async def get_current_user(request: Request, credentials: HTTPAuthorizationCrede
         token = request.cookies.get("id_token")
     
     if not token:
-        # If we're already on the login page, don't redirect
-        if request.url.path == "/auth/login":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated"
-            )
-        # Otherwise redirect to login
         raise HTTPException(
-            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-            headers={'Location': '/auth/login'}
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
         )
             
     try:
@@ -60,21 +55,7 @@ async def get_current_user(request: Request, credentials: HTTPAuthorizationCrede
         user_info = await cognito_auth.get_user_info(token)
         return user_info
     except Exception as e:
-        # Create redirect response
-        redirect = RedirectResponse(url="/auth/login")
-        
-        # Clear invalid token
-        if "id_token" in request.cookies:
-            redirect.delete_cookie(
-                key="id_token",
-                httponly=True,
-                secure=False,
-                samesite="lax",
-                path="/",
-                domain=None
-            )
-        
         raise HTTPException(
-            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
-            headers={'Location': '/auth/login'}
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}"
         ) 

@@ -125,11 +125,11 @@ async def logout(response: Response):
     """
     # Create redirect response
     redirect = RedirectResponse(
-        url="/",
+        url="/auth",
         status_code=303  # See Other
     )
     
-    # Clear the ID token cookie with same settings as when it was set
+    # Clear the auth cookie
     redirect.delete_cookie(
         key="id_token",
         httponly=True,
