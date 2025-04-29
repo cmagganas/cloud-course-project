@@ -185,3 +185,6 @@ lib/
 
 # uv
 uv.lock
+
+# node
+node_modules/
