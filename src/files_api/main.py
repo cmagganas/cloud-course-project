@@ -51,7 +51,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         | [Learn to make "badges"](https://shields.io/) | Example: <img alt="Awesome Badge" src="https://img.shields.io/badge/Awesome-😎-blueviolet?style=for-the-badge"> |
         """
         ),
-        docs_url="/docs",  # Move docs to /docs to free up the root URL
+        docs_url="/docs",  # Standard Swagger docs URL
+        redoc_url="/redoc",  # Standard ReDoc URL
         generate_unique_id_function=custom_generate_unique_id,
         root_path=settings.root_path,
     )
@@ -90,6 +91,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.middleware("http")(handle_broad_exceptions)
     app.middleware("http")(inject_lambda_context__middleware)
+    
+    # Add global authentication middleware
+    @app.middleware("http")
+    async def authenticate_all_routes(request: Request, call_next):
+        # List of paths that don't require authentication
+        public_paths = [
+            "/auth", 
+            "/auth/login", 
+            "/auth/callback", 
+            "/auth/logout",
+            "/static",
+        ]
+        
+        # Check if the request path starts with any of the public paths
+        is_public = any(request.url.path.startswith(path) for path in public_paths)
+        
+        # If it's a public path, proceed without authentication
+        if is_public:
+            return await call_next(request)
+        
+        # Otherwise, check for authentication
+        token = None
+        if "Authorization" in request.headers:
+            auth_header = request.headers.get("Authorization")
+            if auth_header.startswith("Bearer "):
+                token = auth_header.replace("Bearer ", "")
+        elif "id_token" in request.cookies:
+            token = request.cookies.get("id_token")
+        
+        # If no token, redirect to login
+        if not token:
+            response = RedirectResponse(url="/auth?redirect_from_protected=true", status_code=303)
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+            return response
+        
+        # Continue with the request if token exists
+        response = await call_next(request)
+        return response
 
     return app
 
