@@ -86,7 +86,7 @@ async def my_protected_endpoint(user):
 
 ### Configuration
 
-Authentication settings are loaded from environment variables:
+Authentication settings are loaded from environment variables in your `.env` file:
 
 ```
 AWS_REGION=us-west-1
@@ -95,14 +95,20 @@ REACT_APP_COGNITO_CLIENT_ID=50m5rakpde2qse9mf8pb9c12bb
 REACT_APP_COGNITO_CLIENT_SECRET=<your-secret>
 REACT_APP_COGNITO_DOMAIN=us-west-1ibylltjcj.auth.us-west-1.amazoncognito.com
 REACT_APP_COGNITO_SCOPES=openid email profile
-COGNITO_REDIRECT_URI=http://localhost:8000/auth/callback
+REACT_APP_REDIRECT_URI=http://localhost:8000/auth/callback
+```
+
+The application automatically loads these variables when started with `make run-uv`. For local development, copy the `env.example` file to `.env` in the project root and update it with your own values:
+
+```bash
+cp env.example .env
 ```
 
 ## Testing
 
 To test the authentication:
 
-1. Start the FastAPI application: `uvicorn files_api.main:app --reload`
+1. Start the FastAPI application: `make run-uv`
 2. Access http://localhost:8000/auth/login
 3. After login, try accessing http://localhost:8000/protected/test
 4. You should see user information if authentication is successful 

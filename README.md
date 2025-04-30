@@ -31,6 +31,25 @@ make test
 
 ## Development
 
+### Environment Setup
+
+1. Copy the example environment file to create your own:
+   ```bash
+   cp env.example .env
+   ```
+
+2. Edit the `.env` file to set your AWS credentials and other configuration:
+   ```bash
+   # Important settings to update:
+   AWS_PROFILE=your-aws-profile
+   AWS_REGION=your-aws-region
+   S3_BUCKET_NAME=your-s3-bucket-name
+   ```
+
+   The application uses your AWS profile for authentication. Make sure this profile exists in your `~/.aws/credentials` file.
+
+3. For Cognito authentication to work, make sure to update the Cognito settings in the `.env` file.
+
 ### Running the Application
 
 You can run the application in several ways:
@@ -40,7 +59,7 @@ You can run the application in several ways:
    make run-uv
    ```
    This will:
-   - Load environment variables from `.env`
+   - Automatically load environment variables from `.env`
    - Use `uv` to run the application
    - Provide hot-reloading for development
 
@@ -97,4 +116,4 @@ The UI is lightweight and served directly from FastAPI without requiring a separ
 
 ### Environment Configuration
 
-Update the Cognito configuration in your environment variables (e.g. `.env` file)
+Authentication settings are configured in your `.env` file. See the provided `env.example` for all required settings.

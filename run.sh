@@ -8,8 +8,9 @@ set -e
 
 THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 MINIMUM_TEST_COVERAGE_PERCENT=0
-AWS_PROFILE="cloud-course"
-AWS_REGION="us-west-2"
+# Use AWS_PROFILE from environment or default to "cloud-course"
+AWS_PROFILE="${AWS_PROFILE:-cloud-course}"
+AWS_REGION="${AWS_REGION:-us-west-2}"
 AWS_LAMBDA_FUNCTION_NAME="files-api-handler"
 BUILD_DIR_REL_PATH="./build"
 BUILD_DIR="${THIS_DIR}/${BUILD_DIR_REL_PATH}"
@@ -34,8 +35,8 @@ function install {
 # - a lambda function named $AWS_LAMBDA_FUNCTION_NAME already exists
 # - docker 🐳 is required to run this function
 function deploy-lambda {
-    export AWS_PROFILE=cloud-course
-    export AWS_REGION=us-west-2
+    export AWS_PROFILE="${AWS_PROFILE}"
+    export AWS_REGION="${AWS_REGION}"
     deploy-lambda:cd
 }
 
@@ -126,8 +127,8 @@ function generate-client-library {
 }
 
 function run {
-    AWS_PROFILE=cloud-course \
-    S3_BUCKET_NAME="some-bucket" \
+    AWS_PROFILE="${AWS_PROFILE}" \
+    S3_BUCKET_NAME="${S3_BUCKET_NAME:-some-bucket}" \
         uvicorn 'files_api.main:create_app' --reload
 }
 
@@ -159,8 +160,8 @@ function run-mock {
 }
 
 function set-local-aws-env-vars {
-    export AWS_PROFILE=cloud-course
-    export AWS_REGION=us-west-2
+    export AWS_PROFILE="${AWS_PROFILE}"
+    export AWS_REGION="${AWS_REGION}"
 }
 
 function run-docker {

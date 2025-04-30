@@ -72,4 +72,4 @@ test-wheel-locally:
 	bash run.sh test:wheel-locally
 
 run-uv:
-	bash run.sh run-uv
+	bash -c 'source .env' && bash run.sh run-uv
