@@ -22,6 +22,7 @@ dependencies = [
     'loguru',
     'requests',
     'jose',
+    'PyJWT',
 ]
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["one", "two"]
@@ -56,7 +57,9 @@ static-code-qa = [
 # - automatically apply formatting
 # - show enhanced autocompletion for stubs libraries
 # See .vscode/settings.json to see how VS Code is configured to use these tools
-dev = ["cloud-course-project[aws-lambda,api,stubs,notebooks,test,release,static-code-qa]"]
+dev = [
+    "cloud-course-project[aws-lambda,api,stubs,notebooks,test,release,static-code-qa]",
+]
 
 [build-system]
 # Minimum requirements for the build system to execute.
