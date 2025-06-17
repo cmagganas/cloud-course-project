@@ -188,3 +188,6 @@ uv.lock
 
 # node
 node_modules/
+
+# local history
+.history/
