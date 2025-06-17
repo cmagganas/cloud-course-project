@@ -1,5 +1,6 @@
 import os
 from textwrap import dedent
+from typing import Optional
 
 import pydantic
 from fastapi import (
@@ -29,7 +30,7 @@ from files_api.routes import (
 from files_api.settings import Settings
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Optional[Settings] = None) -> FastAPI:
     """Create a FastAPI application."""
     settings = settings or Settings()
 
@@ -63,16 +64,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(GENERATED_FILES_ROUTER)
     app.include_router(auth_router)
     app.include_router(protected_router)
-    
+
     # Root path redirects to auth page
     @app.get("/", response_class=HTMLResponse, tags=["ui"])
     async def root(request: Request):
         return RedirectResponse(url="/auth")
-    
+
     # Serve static files for authentication UI
     static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
-    
+
     # Auth page route
     @app.get("/auth", response_class=HTMLResponse, tags=["ui"])
     async def auth_page(request: Request):
@@ -91,26 +92,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.middleware("http")(handle_broad_exceptions)
     app.middleware("http")(inject_lambda_context__middleware)
-    
+
     # Add global authentication middleware
     @app.middleware("http")
     async def authenticate_all_routes(request: Request, call_next):
         # List of paths that don't require authentication
         public_paths = [
-            "/auth", 
-            "/auth/login", 
-            "/auth/callback", 
+            "/auth",
+            "/auth/login",
+            "/auth/callback",
             "/auth/logout",
             "/static",
         ]
-        
+
         # Check if the request path starts with any of the public paths
         is_public = any(request.url.path.startswith(path) for path in public_paths)
-        
+
         # If it's a public path, proceed without authentication
         if is_public:
             return await call_next(request)
-        
+
         # Otherwise, check for authentication
         token = None
         if "Authorization" in request.headers:
@@ -119,7 +120,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 token = auth_header.replace("Bearer ", "")
         elif "id_token" in request.cookies:
             token = request.cookies.get("id_token")
-        
+
         # If no token, redirect to login
         if not token:
             response = RedirectResponse(url="/auth?redirect_from_protected=true", status_code=303)
@@ -127,7 +128,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
             return response
-        
+
         # Continue with the request if token exists
         response = await call_next(request)
         return response

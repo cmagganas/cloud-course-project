@@ -1,6 +1,7 @@
 from typing import (
     Literal,
     Tuple,
+    Union,
 )
 
 from openai import AsyncOpenAI
@@ -29,7 +30,7 @@ async def get_text_chat_completion(prompt: str) -> str:
     return generated_text
 
 
-async def generate_image(prompt: str) -> str | None:
+async def generate_image(prompt: str) -> Union[str, None]:
     """Generate an image from a given prompt."""
     # get the OpenAI client
     client = AsyncOpenAI()
@@ -43,7 +44,7 @@ async def generate_image(prompt: str) -> str | None:
         n=1,
     )
 
-    generated_image_url: str | None = image_response.data[0].url
+    generated_image_url: Union[str, None] = image_response.data[0].url
     return generated_image_url
 
 

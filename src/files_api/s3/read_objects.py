@@ -1,6 +1,10 @@
 """Functions for reading objects from an S3 bucket--the "R" in CRUD."""
 
-from typing import Optional
+from typing import (
+    List,
+    Optional,
+    Tuple,
+)
 
 import boto3
 
@@ -60,9 +64,9 @@ def fetch_s3_object(
 def fetch_s3_objects_using_page_token(
     bucket_name: str,
     continuation_token: str,
-    max_keys: int | None = None,
+    max_keys: Optional[int] = None,
     s3_client: Optional["S3Client"] = None,
-) -> tuple[list["ObjectTypeDef"], Optional[str]]:
+) -> Tuple[List["ObjectTypeDef"], Optional[str]]:
     """
     Fetch list of object keys and their metadata using a continuation token.
 
@@ -81,8 +85,8 @@ def fetch_s3_objects_using_page_token(
         ContinuationToken=continuation_token,
         MaxKeys=max_keys or DEFAULT_MAX_KEYS,
     )
-    files: list["ObjectTypeDef"] = response.get("Contents", [])
-    next_continuation_token: str | None = response.get("NextContinuationToken")
+    files: List["ObjectTypeDef"] = response.get("Contents", [])
+    next_continuation_token: Optional[str] = response.get("NextContinuationToken")
 
     return files, next_continuation_token
 
@@ -92,7 +96,7 @@ def fetch_s3_objects_metadata(
     prefix: Optional[str] = None,
     max_keys: Optional[int] = DEFAULT_MAX_KEYS,
     s3_client: Optional["S3Client"] = None,
-) -> tuple[list["ObjectTypeDef"], Optional[str]]:
+) -> Tuple[List["ObjectTypeDef"], Optional[str]]:
     """
     Fetch list of object keys and their metadata.
 
@@ -106,8 +110,8 @@ def fetch_s3_objects_metadata(
         2. Next continuation token if there are more pages, otherwise None.
     """
     s3_client = s3_client or boto3.client("s3")
-    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix or "", MaxKeys=max_keys)
-    files: list["ObjectTypeDef"] = response.get("Contents", [])
-    next_page_token: str | None = response.get("NextContinuationToken")
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix or "", MaxKeys=max_keys or DEFAULT_MAX_KEYS)
+    files: List["ObjectTypeDef"] = response.get("Contents", [])
+    next_page_token: Optional[str] = response.get("NextContinuationToken")
 
     return files, next_page_token
